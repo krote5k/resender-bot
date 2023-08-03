@@ -5,6 +5,21 @@ from telebot import types
 
 bot = telebot.TeleBot(config.token)
 
+'''
+def sender_verify(message_chat_id):
+    if message_chat_id == int(config.sender_id):
+        sender_name = config.sender_name
+        print("Проверка 1")
+        pass
+    elif message_chat_id == int(config.sender_id_owner):
+        sender_name = config.sender_name_owner
+        print("Проверка 2")
+        pass
+    else:
+        bot.send_message(message_chat_id, f"*{message.chat.username}* я тебя не знаю ", parse_mode = 'Markdown')
+        print("Проверку не прошёл")
+'''
+
 @bot.message_handler(commands=["start"])
 def start(message):
     bot.send_message(message.chat.id, 'Приветствую. \n\n Отправьте /help для подсказки.')
@@ -35,7 +50,7 @@ def send_weather(message):
 """
 
 @bot.message_handler(content_types=["text"])
-def messages(message):
+def send_messages(message):
     if int(message.chat.id) == int(config.chat):
         try:
             chatId=message.text.split(': ')[0]
@@ -54,7 +69,7 @@ def messages(message):
         bot.send_message(message.chat.id, f"*{message.chat.username}* идет отправка 👍", parse_mode = 'Markdown')
 
 @bot.message_handler(content_types=["photo"])
-def get_photo(message):
+def send_photo(message):
 
     if message.chat.id == int(config.sender_id):
         sender_name = config.sender_name
@@ -67,9 +82,10 @@ def get_photo(message):
 
 
 @bot.message_handler(content_types=["document"])
-def command_doc(message):
-#        bot.send_message(config.chat, sender_name + ': ' + message.text)
-    bot.send_message(message.chat.id, "Отправка документов пока не реализована.")
+def send_doc(message):
+#    sender_verify(message.chat.id)
+    bot.forward_message(config.chat, message.chat.id, message.message_id) 
+    bot.send_message(message.chat.id, "Переслал документ.")
 
 if __name__ == '__main__':
     bot.polling(none_stop = True)
