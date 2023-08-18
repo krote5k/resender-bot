@@ -71,21 +71,44 @@ def send_messages(message):
 @bot.message_handler(content_types=["photo"])
 def send_photo(message):
 
-    if message.chat.id == int(config.sender_id):
-        sender_name = config.sender_name
+    if int(message.chat.id) == int(config.chat):
+        try:
+            chatId=message.text.split(': ')[0]
+            text=message.text.split(': ')[1]
+            bot.send_message(chatId, text)
+        except:
+            pass
     else:
-        sender_name = str(message.chat.username)
+        # При отправке не тем человеком - подставляется его ник
+        if message.chat.id == int(config.sender_id):
+            sender_name = config.sender_name
+        else:
+            sender_name = str(message.chat.username)
 
-    photo = message.photo[-1].file_id
-    bot.send_photo(config.chat, photo, f"*{sender_name}*: {message.caption}", parse_mode='Markdown')
-    bot.send_message(message.chat.id, f"*{message.chat.username}*, фото отправлено.", parse_mode = 'Markdown')
+        photo = message.photo[-1].file_id
+        bot.send_photo(config.chat, photo, f"*{sender_name}*: {message.caption}", parse_mode='Markdown')
+        bot.send_message(message.chat.id, f"*{message.chat.username}*, фото отправлено.", parse_mode = 'Markdown')
 
 
 @bot.message_handler(content_types=["document"])
 def send_doc(message):
-#    sender_verify(message.chat.id)
-    bot.forward_message(config.chat, message.chat.id, message.message_id) 
-    bot.send_message(message.chat.id, "Переслал документ.")
+
+    if int(message.chat.id) == int(config.chat):
+        try:
+            chatId=message.text.split(': ')[0]
+            text=message.text.split(': ')[1]
+            bot.send_message(chatId, text)
+        except:
+            pass
+    else:
+        # При отправке не тем человеком - подставляется его ник
+        if message.chat.id == int(config.sender_id):
+            sender_name = config.sender_name
+        else:
+            sender_name = str(message.chat.username)
+ 
+        bot.forward_message(config.chat, message.chat.id, message.message_id) 
+        bot.send_message(message.chat.id, "Переслал документ.")
 
 if __name__ == '__main__':
     bot.polling(none_stop = True)
