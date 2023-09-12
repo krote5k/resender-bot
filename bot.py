@@ -33,7 +33,6 @@ def helps(message):
 def send_rasp(message):
     bot.send_photo(config.chat, open('raspisanie.jpg', 'rb'))
 
-
 """
 @bot.message_handler(commands=['w', 'п'])
 @bot.message_handler(regexp="^.п$")
@@ -51,7 +50,10 @@ def send_weather(message):
 
 @bot.message_handler(func=lambda message: message.reply_to_message is not None)
 def reply(message):
-    bot.forward_message(config.sender_id, config.chat, message.message_id)
+    if message.reply_to_message.from_user.username == "atsip_d_bot":
+        bot.forward_message(config.sender_id, config.chat, message.message_id)
+    else:
+        pass
 
 @bot.message_handler(content_types=["text"])
 def send_messages(message):
