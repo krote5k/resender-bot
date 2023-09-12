@@ -49,6 +49,10 @@ def send_weather(message):
         bot.send_message(message.chat.id, u"cannot get content of ( URL: {own_link})... ERROR:" + str(r.status))
 """
 
+@bot.message_handler(func=lambda message: message.reply_to_message is not None)
+def reply(message):
+    bot.forward_message(config.sender_id, config.chat, message.message_id)
+
 @bot.message_handler(content_types=["text"])
 def send_messages(message):
     if int(message.chat.id) == int(config.chat):
@@ -66,7 +70,7 @@ def send_messages(message):
             sender_name = str(message.chat.username)
 
         bot.send_message(config.chat, f"*{sender_name}*: {message.text}", parse_mode = 'Markdown')
-        bot.send_message(message.chat.id, f"*{message.chat.username}* идет отправка 👍", parse_mode = 'Markdown')
+        bot.send_message(message.chat.id, f"*{message.from_user.first_name} {message.from_user.last_name}*  идет отправка 👍", parse_mode = 'Markdown')
 
 @bot.message_handler(content_types=["photo"])
 def send_photo(message):
