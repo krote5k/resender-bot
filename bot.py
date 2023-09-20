@@ -5,20 +5,18 @@ from telebot import types
 
 bot = telebot.TeleBot(config.token)
 
-'''
-def sender_verify(message_chat_id):
-    if message_chat_id == int(config.sender_id):
+#Проверка на принадлежность к доверенным лицам
+def sender_verify(message_from_user_id):
+    if message_from_user_id == int(config.sender_id):
         sender_name = config.sender_name
-        print("Проверка 1")
+#        print("Проверка 1")
         pass
-    elif message_chat_id == int(config.sender_id_owner):
+    elif message_from_user_id == int(config.sender_id_owner):
         sender_name = config.sender_name_owner
-        print("Проверка 2")
-        pass
+#        print("Проверка 2")
     else:
         bot.send_message(message_chat_id, f"*{message.chat.username}* я тебя не знаю ", parse_mode = 'Markdown')
         print("Проверку не прошёл")
-'''
 
 @bot.message_handler(commands=["start"])
 def start(message):
@@ -28,32 +26,24 @@ def start(message):
 def helps(message):
     bot.send_message(message.chat.id, 'Просто отправляете сообщение и оно отправится участникам школьного чата')
 
+#Удаление сообщений
+@bot.message_handler(commands=["del"])
+def delete(message):
+    if  message.reply_to_message is not None:
+        print(message.reply_to_message)
+        bot.delete_message(message.chat.id, message.reply_to_message.id)
+        bot.delete_message(message.chat.id, message.message_id)
+
 @bot.message_handler(commands=["расписание"])
 @bot.message_handler(regexp="^расписание$")
 def send_rasp(message):
     bot.send_photo(config.chat, open('raspisanie.jpg', 'rb'))
 
-"""
-@bot.message_handler(commands=['w', 'п'])
-@bot.message_handler(regexp="^.п$")
-def send_weather(message):
-    # get temperature ORSK
-    r = requests.get(own_link)
-    if r.status_code == 200:
-        doc = xmltodict.parse(r.text)
-        value = doc['current']['temperature']['@value']
-        print('ORSK T:' + value)
-        bot.send_message(message.chat.id, 'ORSK T: ' + value)
-    else:
-        bot.send_message(message.chat.id, u"cannot get content of ( URL: {own_link})... ERROR:" + str(r.status))
-"""
-
+#Пересылка ответа по реплаю учителю
 @bot.message_handler(func=lambda message: message.reply_to_message is not None)
 def reply(message):
     if message.reply_to_message.from_user.username == "atsip_d_bot":
         bot.forward_message(config.sender_id, config.chat, message.message_id)
-    else:
-        pass
 
 @bot.message_handler(content_types=["text"])
 def send_messages(message):
@@ -71,7 +61,9 @@ def send_messages(message):
         else:
             sender_name = str(message.chat.username)
 
+        sender_verify(message.from_user.id)
         bot.send_message(config.chat, f"*{sender_name}*: {message.text}", parse_mode = 'Markdown')
+#        print(message.from_user.id)
         bot.send_message(message.chat.id, f"*{message.from_user.first_name} {message.from_user.last_name}*  идет отправка 👍", parse_mode = 'Markdown')
 
 @bot.message_handler(content_types=["photo"])
@@ -92,11 +84,16 @@ def send_photo(message):
             sender_name = str(message.chat.username)
 
         photo = message.photo[-1].file_id
+        sender_verify(message.from_user.id)
+
+        if message.caption is None:
+            message.caption = ""
+
         bot.send_photo(config.chat, photo, f"*{sender_name}*: {message.caption}", parse_mode='Markdown')
-        bot.send_message(message.chat.id, f"*{message.chat.username}*, фото отправлено.", parse_mode = 'Markdown')
+        bot.send_message(message.chat.id, f"*{message.from_user.first_name} {message.from_user.last_name}*, фото отправлено.", parse_mode = 'Markdown')
 
 
-@bot.message_handler(content_types=["document"])
+@bot.message_handler(content_types=["document", "video", "audio"])
 def send_doc(message):
 
     if int(message.chat.id) == int(config.chat):
