@@ -9,11 +9,8 @@ bot = telebot.TeleBot(config.token)
 def sender_verify(message_from_user_id):
     if message_from_user_id == int(config.sender_id):
         sender_name = config.sender_name
-#        print("Проверка 1")
-        pass
     elif message_from_user_id == int(config.sender_id_owner):
         sender_name = config.sender_name_owner
-#        print("Проверка 2")
     else:
         bot.send_message(message_chat_id, f"*{message.chat.username}* я тебя не знаю ", parse_mode = 'Markdown')
         print("Проверку не прошёл")
@@ -30,8 +27,9 @@ def helps(message):
 @bot.message_handler(commands=["del"])
 def delete(message):
     if  message.reply_to_message is not None:
-        print(message.reply_to_message)
+        #print(message.reply_to_message)
         bot.delete_message(message.chat.id, message.reply_to_message.id)
+        #подтираем за собой
         bot.delete_message(message.chat.id, message.message_id)
 
 @bot.message_handler(commands=["расписание"])
@@ -62,8 +60,9 @@ def send_messages(message):
             sender_name = str(message.chat.username)
 
         sender_verify(message.from_user.id)
-        bot.send_message(config.chat, f"*{sender_name}*: {message.text}", parse_mode = 'Markdown')
-#        print(message.from_user.id)
+        # Отправка в чат
+        bot.send_message(config.chat, f"<b>{sender_name}</b>: {message.text}", parse_mode = 'html')
+        #Отправка в личку учителю
         bot.send_message(message.chat.id, f"*{message.from_user.first_name} {message.from_user.last_name}*  идет отправка 👍", parse_mode = 'Markdown')
 
 @bot.message_handler(content_types=["photo"])
@@ -89,7 +88,9 @@ def send_photo(message):
         if message.caption is None:
             message.caption = ""
 
-        bot.send_photo(config.chat, photo, f"*{sender_name}*: {message.caption}", parse_mode='Markdown')
+        print(message.photo)
+
+        bot.send_photo(config.chat, photo, f"<b>{sender_name}</b>: {message.caption}", parse_mode='html')
         bot.send_message(message.chat.id, f"*{message.from_user.first_name} {message.from_user.last_name}*, фото отправлено.", parse_mode = 'Markdown')
 
 
